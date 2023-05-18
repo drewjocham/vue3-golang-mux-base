@@ -54,15 +54,16 @@
         <p class="text-xs py-1">GO</p>
       </div>
       <div class="xyz-in border-2 py-1 border-light-gray rounded-md flex flex-col justify-center items-center">
-        <img src="../assets/grpc.svg" class="w-16" alt="Typescript" />
+        <img src="../assets/mux.svg" class="w-16" alt="Typescript" />
       </div>
       <div class="xyz-in border-2 py-1 border-light-gray rounded-md flex flex-col justify-center items-center">
-        <img src="../assets/circleci.svg" class="w-16" alt="Typescript" />
+          <img src="../assets/Tailwind.svg" class="w-16" alt="Tailwind" />
+          <p class="text-xs py-1">Tailwindcss</p>
       </div>
       <div class="xyz-in border-2 py-1 col-span-3 border-light-gray rounded-md flex flex-col justify-center items-center">
-        <img src="../assets/Tailwind.svg" class="w-16" alt="Tailwind" />
-        <p class="text-xs py-1">Tailwindcss</p>
+          <img src="../assets/gcp-logo.svg" class="w-40" alt="Typescript" />
       </div>
+
     </main>
   </XyzTransitionGroup>
 </template>

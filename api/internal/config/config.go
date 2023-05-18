@@ -4,11 +4,6 @@ import (
 	"github.com/kelseyhightower/envconfig"
 )
 
-type ServerConfig struct {
-	HTTPPort      int    `envconfig:"PORT" default:"8081"`
-	ServerAddress string `envconfig:"SERVER_ADDRESS" default:"localhost:8082"`
-}
-
 type Config struct {
 	Port    int    `envconfig:"PORT" default:"8081"`
 	Env     string `envconfig:"ENV" default:"development"`

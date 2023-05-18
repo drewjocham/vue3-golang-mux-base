@@ -40,6 +40,7 @@ func (app *application) listTestHandler(w http.ResponseWriter, r *http.Request) 
 		{Name: "Drew", Lastname: "Jocham"},
 		{Name: "Mike", Lastname: "vue"},
 		{Name: "go", Lastname: "lang"},
+		{Name: "AI", Lastname: "rules"},
 	}
 
 	err := app.writeJSON(w, http.StatusOK, envelope{"data": tempData, "metadata": "none"}, nil)

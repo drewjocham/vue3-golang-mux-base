@@ -4,7 +4,7 @@ services:
         build:
             context: ./api
         environment:
-            - HTTP_PORT=8081
+            - PORT=8081
         ports:
             - "8081:8081"
         networks:
