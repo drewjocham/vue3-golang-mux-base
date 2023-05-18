@@ -10,11 +10,9 @@ type ServerConfig struct {
 }
 
 type Config struct {
-	Server ServerConfig
-
-	Port    int
-	Env     string
-	Version string
+	Port    int    `envconfig:"PORT" default:"8081"`
+	Env     string `envconfig:"ENV" default:"development"`
+	Version string `envconfig:"VERSION" default:"development"`
 
 	Limiter struct {
 		Enabled bool
@@ -31,7 +29,7 @@ type Config struct {
 	}
 
 	Cors struct {
-		TrustedOrigins []string
+		TrustedOrigins []string `envconfig:"CORS" default:"http://localhost:3000"`
 	}
 }
 

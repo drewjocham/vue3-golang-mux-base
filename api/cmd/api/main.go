@@ -11,6 +11,7 @@ import (
 	log "github.com/interviews/utils/logger"
 	"os"
 	"runtime"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -40,8 +41,13 @@ func main() {
 
 	clog.Info("Starting Application")
 
-	//TODO: what is happening here with the port????
-	flag.IntVar(&cfg.Server.HTTPPort, "port", 8081, "API server port")
+	// not a huge fan of this...
+	port, err := strconv.Atoi(strconv.Itoa(cfg.Port))
+	if err != nil {
+		return
+	}
+
+	flag.IntVar(&cfg.Port, "port", port, "API server port")
 	flag.StringVar(&cfg.Env, "env", "development", "Environment (development|staging|production)")
 
 	logger := jsonlog.New(os.Stdout, jsonlog.LevelInfo)
@@ -58,12 +64,9 @@ func main() {
 
 	flag.Func("cors-trusted-origins", "Trusted CORS origins (space separated)", func(val string) error {
 		cfg.Cors.TrustedOrigins = strings.Fields(val)
-		//TODO: figure out what is going on here the below does not work...
-		//cfg.Cors.TrustedOrigins = strings.Fields("http://localhost:3000")
+
 		return nil
 	})
-
-	cfg.Cors.TrustedOrigins = strings.Fields("http://localhost:3000")
 
 	app := &application{
 		config: cfg,
