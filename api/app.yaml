@@ -12,7 +12,7 @@ resources:
     memory_gb: 0.5
     disk_size_gb: 10
 env_variables:
-    PORT: 8080
+    ENV: Production
 network:
     forwarded_ports:
       - 8082:8082/tcp # testing to see if it works

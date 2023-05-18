@@ -5,7 +5,7 @@ import (
 )
 
 type Config struct {
-	Port    int    `envconfig:"PORT" default:"8081"`
+	Port    int    `envconfig:"PORT" default:"8081"` // PORT is default to 8080 in App Engine
 	Env     string `envconfig:"ENV" default:"development"`
 	Version string `envconfig:"VERSION" default:"development"`
 
