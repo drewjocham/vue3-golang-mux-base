@@ -30,7 +30,6 @@ const submit = async () => {
     }
 
 }
-
 </script>
 
 <style scoped>

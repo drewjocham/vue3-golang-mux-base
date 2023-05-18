@@ -12,13 +12,13 @@ steps:
     -   name: 'gcr.io/cloud-builders/docker'
         dir: 'api'
         args: [ 'build', '-t',
-                'us-central1-docker.pkg.dev/casestudy2108/personal/vue-golang-grpc-base/api:$SHORT_SHA', '.' ]
+                'us-central1-docker.pkg.dev/casestudy2108/personal/vue-golang-mux-base/api:$SHORT_SHA', '.' ]
         env:
             - 'SERVER_ADDRESS=${_SERVER_ADDRESS}'
 
     # Docker push to Google Artifact Registry
     -   name: 'gcr.io/cloud-builders/docker'
-        args: [ 'push', 'us-central1-docker.pkg.dev/casestudy2108/personal/vue-golang-grpc-base/api:$SHORT_SHA' ]
+        args: [ 'push', 'us-central1-docker.pkg.dev/casestudy2108/personal/vue-golang-mux-base/api:$SHORT_SHA' ]
 
     # yarn install
     -   name: 'gcr.io/cloud-builders/yarn'
@@ -36,11 +36,11 @@ steps:
     -   name: 'gcr.io/cloud-builders/docker'
         dir: 'view'
         args: [ 'build', '-t',
-                'us-central1-docker.pkg.dev/casestudy2108/personal/vue-golang-grpc-base/view:$SHORT_SHA', '.' ]
+                'us-central1-docker.pkg.dev/casestudy2108/personal/vue-golang-mux-base/view:$SHORT_SHA', '.' ]
 
     # Docker push view to Google Artifact Registry
     -   name: 'gcr.io/cloud-builders/docker'
-        args: [ 'push', 'us-central1-docker.pkg.dev/casestudy2108/personal/vue-golang-grpc-base/view:$SHORT_SHA' ]
+        args: [ 'push', 'us-central1-docker.pkg.dev/casestudy2108/personal/vue-golang-mux-base/view:$SHORT_SHA' ]
 
     # Deploy api to GCP App Engine
     -   name: "gcr.io/cloud-builders/gcloud"
@@ -49,7 +49,7 @@ steps:
           [
               "app",
               "deploy",
-              "--image-url=us-central1-docker.pkg.dev/casestudy2108/personal/vue-golang-grpc-base/api:$SHORT_SHA",
+              "--image-url=us-central1-docker.pkg.dev/casestudy2108/personal/vue-golang-mux-base/api:$SHORT_SHA",
           ]
         timeout: "1600s"
 
@@ -60,11 +60,11 @@ steps:
           [
               "app",
               "deploy",
-              "--image-url=us-central1-docker.pkg.dev/casestudy2108/personal/vue-golang-grpc-base/view:$SHORT_SHA",
+              "--image-url=us-central1-docker.pkg.dev/casestudy2108/personal/vue-golang-mux-base/view:$SHORT_SHA",
           ]
         timeout: "1600s"
 
 images:
-    - 'us-central1-docker.pkg.dev/casestudy2108/personal/vue-golang-grpc-base/api:$SHORT_SHA'
-    - 'us-central1-docker.pkg.dev/casestudy2108/personal/vue-golang-grpc-base/view:$SHORT_SHA'
+    - 'us-central1-docker.pkg.dev/casestudy2108/personal/vue-golang-mux-base/api:$SHORT_SHA'
+    - 'us-central1-docker.pkg.dev/casestudy2108/personal/vue-golang-mux-base/view:$SHORT_SHA'
 

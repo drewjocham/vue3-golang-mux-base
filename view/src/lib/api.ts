@@ -1,6 +1,6 @@
 import axios, {AxiosInstance} from "axios";
 import { EnvironmentHelper } from "./EnvironmentHelper";
-import {TestResponse, TestResponseRO} from "./models/TestResponse";
+import {TestResponseRO} from "./models/TestResponse";
 
 const url = new EnvironmentHelper()
 
