@@ -36,11 +36,19 @@ dockerhub-image-down: ## stop docker with dockerhub image
 
 .PHONY: mod-vendor
 mod-vendor: ## Download, verify and vendor dependencies
-	cd api && go mod tidy && go mod download && go mod verify && go mod vendor
+	cd api && go mod tidy && go mod download && go mod verify
 
 .PHONY: linter
 linter: ## Run linter
 	cd api && golangci-lint run
+
+.PHONY: update-go-deps
+update-go-deps:
+	cd api && go get -u ./...
+
+.PHONY: update-yarn-deps
+go-go-deps:
+	yarn upgrade --latest
 
 # https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 .PHONY: help
