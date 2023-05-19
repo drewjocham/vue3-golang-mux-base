@@ -5,9 +5,14 @@
     <div class="text-white">
       <div class="grid grid-cols-2 gap-4">
         <div v-for="item in test">
-            <li> {{ item.firstName }} </li>
+            <ul>
+                <li> {{ item.firstName }} </li>
+            </ul>
         </div>
       </div>
+        <video ref="videoPlayer" controls preload="auto" class="video-js">
+            <source src="https://storage.googleapis.com/casestudy2108.appspot.com/Screen%20Recording%202023-05-19%20at%2011.24.27.mov">
+        </video>
     </div>
 </template>
 
@@ -15,6 +20,7 @@
 import {PropType, reactive, ref} from "vue";
 import { api } from "../lib/api";
 import {TestResponse, TestResponseRO} from "../lib/models/TestResponse";
+import videojs from "video.js";
 
 const test = ref<TestResponse[]>([])
 

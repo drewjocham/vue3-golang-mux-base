@@ -38,8 +38,8 @@ func (app *application) listTestHandler(w http.ResponseWriter, r *http.Request) 
 
 	tempData := []*mockData{
 		{Name: "Drew", Lastname: "Jocham"},
-		{Name: "Mike", Lastname: "vue"},
-		{Name: "go", Lastname: "lang"},
+		{Name: "Peter", Lastname: "vue"},
+		{Name: "GoLang", Lastname: "lang"},
 		{Name: "AI", Lastname: "rules"},
 	}
 

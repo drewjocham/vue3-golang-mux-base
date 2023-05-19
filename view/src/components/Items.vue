@@ -63,13 +63,13 @@
       <div class="xyz-in border-2 py-1 col-span-3 border-light-gray rounded-md flex flex-col justify-center items-center">
           <img src="../assets/gcp-logo.svg" class="w-40" alt="Typescript" />
       </div>
-
     </main>
   </XyzTransitionGroup>
 </template>
 
 <script lang="ts" setup>
 import { onMounted, ref } from "vue";
+
 let show = ref(false);
 
 onMounted(() => {
