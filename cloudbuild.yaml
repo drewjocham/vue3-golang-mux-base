@@ -26,7 +26,7 @@ steps:
         args: [ 'install' ]
 
     # yarn build
-    -   name: 'gcr.io/cloud-builders/npm'
+    -   name: 'gcr.io/cloud-builders/yarn'
         dir: 'view'
         args: [ 'build' ]
         env:

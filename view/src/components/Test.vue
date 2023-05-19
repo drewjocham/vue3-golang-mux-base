@@ -23,7 +23,6 @@
 import {ref} from "vue";
 import { api } from "../lib/api";
 import {TestResponse} from "../lib/models/TestResponse";
-//import video from 'video.js'
 
 const test = ref<TestResponse[]>([])
 
