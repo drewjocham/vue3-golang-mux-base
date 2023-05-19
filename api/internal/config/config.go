@@ -24,7 +24,7 @@ type Config struct {
 	}
 
 	Cors struct {
-		TrustedOrigins []string `envconfig:"CORS" default:"http://127.0.0.1:5173"`
+		TrustedOrigins []string `envconfig:"CORS" default:"http://localhost:3000"`
 	}
 }
 

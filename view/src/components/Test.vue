@@ -10,17 +10,19 @@
             </ul>
         </div>
       </div>
+    </div>
+    <div class="flex pt-9">
         <video ref="videoPlayer" controls preload="auto" class="video-js">
             <source src="https://storage.googleapis.com/casestudy2108.appspot.com/Screen%20Recording%202023-05-19%20at%2011.24.27.mov">
         </video>
     </div>
+
 </template>
 
 <script setup lang="ts">
-import {PropType, reactive, ref} from "vue";
+import {ref} from "vue";
 import { api } from "../lib/api";
-import {TestResponse, TestResponseRO} from "../lib/models/TestResponse";
-import videojs from "video.js";
+import {TestResponse} from "../lib/models/TestResponse";
 
 const test = ref<TestResponse[]>([])
 
