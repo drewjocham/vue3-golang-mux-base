@@ -1,8 +1,11 @@
 package main
 
 import (
+	"fullstackguru/pkg/logger"
 	"net/http"
 )
+
+type envelope map[string]any
 
 func (app *application) healthcheckHandler(w http.ResponseWriter, r *http.Request) {
 	env := envelope{
@@ -13,8 +16,10 @@ func (app *application) healthcheckHandler(w http.ResponseWriter, r *http.Reques
 		},
 	}
 
-	err := app.writeJSON(w, http.StatusOK, env, nil)
+	err := app.helper.WriteJSON(w, http.StatusOK, env, nil)
 	if err != nil {
-		app.serverErrorResponse(w, r, err)
+		app.logger.ErrorCtx(err, logger.Ctx{
+			"msg": "Unable to write health check response",
+		})
 	}
 }

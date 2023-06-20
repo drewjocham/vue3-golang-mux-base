@@ -23,5 +23,17 @@ services:
         ports:
             - "80:8080"
             - "443:443"
+    postgres:
+        container_name: postgres_container
+        image: postgres:14.1
+        volumes:
+            - ./postgres_data:/var/lib/postgresql/data
+            - ./dbscripts/postgres:/docker-entrypoint-initdb.d
+        environment:
+            POSTGRES_USER: admin
+            POSTGRES_PASSWORD: admin
+            POSTGRES_DB: fullstackguru
+        ports:
+            - 5434:5432
 networks:
     personal:

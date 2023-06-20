@@ -1,4 +1,4 @@
-package data
+package pkg
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"encoding/base32"
-	validator "github.com/interviews/internal/vaildator"
+	validator "fullstackguru/pkg/vaildator"
 	"time"
 )
 
@@ -24,7 +24,7 @@ type Token struct {
 	Scope     string    `json:"-"`
 }
 
-func generateToken(userID int64, ttl time.Duration, scope string) (*Token, error) {
+func (m TokenRepository) GenerateToken(userID int64, ttl time.Duration, scope string) (*Token, error) {
 	token := &Token{
 		UserID: userID,
 		Expiry: time.Now().Add(ttl),
@@ -46,17 +46,17 @@ func generateToken(userID int64, ttl time.Duration, scope string) (*Token, error
 	return token, nil
 }
 
-func ValidateTokenPlaintext(v *validator.Validator, tokenPlaintext string) {
+func (m TokenRepository) ValidateTokenPlaintext(v *validator.Validator, tokenPlaintext string) {
 	v.Check(tokenPlaintext != "", "token", "must be provided")
 	v.Check(len(tokenPlaintext) == 26, "token", "must be 26 bytes long")
 }
 
-type TokenModel struct {
+type TokenRepository struct {
 	DB *sql.DB
 }
 
-func (m TokenModel) New(userID int64, ttl time.Duration, scope string) (*Token, error) {
-	token, err := generateToken(userID, ttl, scope)
+func (m TokenRepository) New(userID int64, ttl time.Duration, scope string) (*Token, error) {
+	token, err := m.GenerateToken(userID, ttl, scope)
 	if err != nil {
 		return nil, err
 	}
@@ -65,9 +65,9 @@ func (m TokenModel) New(userID int64, ttl time.Duration, scope string) (*Token, 
 	return token, err
 }
 
-func (m TokenModel) Insert(token *Token) error {
+func (m TokenRepository) Insert(token *Token) error {
 	query := `
-        INSERT INTO tokens (hash, user_id, expiry, scope) 
+        INSERT INTO tokens (hash, user_id, expiry, scope)
         VALUES ($1, $2, $3, $4)`
 
 	args := []any{token.Hash, token.UserID, token.Expiry, token.Scope}
@@ -79,9 +79,9 @@ func (m TokenModel) Insert(token *Token) error {
 	return err
 }
 
-func (m TokenModel) DeleteAllForUser(scope string, userID int64) error {
+func (m TokenRepository) DeleteAllForUser(scope string, userID int64) error {
 	query := `
-        DELETE FROM tokens 
+        DELETE FROM tokens
         WHERE scope = $1 AND user_id = $2`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
@@ -89,4 +89,8 @@ func (m TokenModel) DeleteAllForUser(scope string, userID int64) error {
 
 	_, err := m.DB.ExecContext(ctx, query, scope, userID)
 	return err
+}
+
+func NewTokenRepository(db *sql.DB) *TokenRepository {
+	return &TokenRepository{DB: db}
 }

@@ -2,14 +2,12 @@ package logger
 
 import (
 	"errors"
-	"net/http"
 	"os"
 	"time"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"go.uber.org/zap/zaptest/observer"
-	"google.golang.org/grpc/codes"
 )
 
 const timeFormat = "2006-01-02 15:04:05.999"
@@ -120,6 +118,16 @@ func (l *Logger) InfoCtx(msg string, ctx Ctx) {
 	l.zapLogger.Info(msg, fields...)
 }
 
+func (l *Logger) PrintInfo(message string, properties map[string]string) {
+	fields := make([]zap.Field, 0, len(properties))
+
+	for k, v := range properties {
+		fields = append(fields, zap.Any(k, v))
+	}
+
+	l.zapLogger.Info(message, fields...)
+}
+
 func (l *Logger) Warn(msg string) {
 	l.zapLogger.Warn(msg)
 }
@@ -176,11 +184,13 @@ func (l *Logger) apiError(err *APIError, extCtx []zap.Field) {
 
 	fields = append(fields, extCtx...)
 
-	if codes.Code(err.Status) == codes.Internal || err.Status == http.StatusInternalServerError {
-		l.zapLogger.WithOptions(zap.AddCallerSkip(2)).Error(err.Message, fields...)
-	} else {
-		l.zapLogger.WithOptions(zap.AddCallerSkip(2)).Warn(err.Message, fields...)
-	}
+	/*
+		if codes.Code(err.Status) == codes.Internal || err.Status == http.StatusInternalServerError {
+			l.zapLogger.WithOptions(zap.AddCallerSkip(2)).Error(err.Message, fields...)
+		} else {
+			l.zapLogger.WithOptions(zap.AddCallerSkip(2)).Warn(err.Message, fields...)
+		}
+	*/
 }
 
 func (l *Logger) Fatal(err error) {

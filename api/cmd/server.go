@@ -26,7 +26,6 @@ func (app *application) serve() error {
 		quit := make(chan os.Signal, 1)
 		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 		s := <-quit
-
 		app.logger.PrintInfo("caught signal", map[string]string{
 			"signal": s.String(),
 		})
@@ -54,6 +53,8 @@ func (app *application) serve() error {
 
 	err := srv.ListenAndServe()
 	if !errors.Is(err, http.ErrServerClosed) {
+		app.logger.Error(err)
+
 		return err
 	}
 
@@ -67,4 +68,5 @@ func (app *application) serve() error {
 	})
 
 	return nil
+
 }

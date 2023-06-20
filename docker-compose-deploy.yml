@@ -5,8 +5,7 @@ services:
         networks:
             - personal
         ports:
-            - "8082:8082" # gRPC
-            - "8081:8081" # gRPC Gateway
+            - "8081:8081"
     view:
         image: drewjocham/view:latest
         environment:

@@ -26,6 +26,15 @@ type Config struct {
 	Cors struct {
 		TrustedOrigins []string `envconfig:"CORS" default:"http://127.0.0.1:5173"`
 	}
+
+	DatabaseConfig struct {
+		Uri      string `envconfig:"DB_URI" default:"jdbc:postgresql://localhost:5434/fullstackguru"`
+		Password string `envconfig:"DB_PASSWORD" default:"admin"`
+		User     string `envconfig:"DB_USER" default:"admin"`
+		DataName string `envconfig:"DB_NAME" default:"fullstackguru"`
+		Host     string `envconfig:"DB_HOST" default:"localhost"`
+		Port     int    `envconfig:"DB_PORT" default:"5434"`
+	}
 }
 
 func NewConfig() (*Config, error) {

@@ -1,22 +1,23 @@
-package main
+package data
 
 import (
 	"context"
-	"github.com/interviews/internal/data"
 	"net/http"
 )
 
+type UsersContext struct {
+}
 type contextKey string
 
 const userContextKey = contextKey("user")
 
-func (app *application) contextSetUser(r *http.Request, user *data.User) *http.Request {
+func (m *UsersContext) ContextSetUser(r *http.Request, user *User) *http.Request {
 	ctx := context.WithValue(r.Context(), userContextKey, user)
 	return r.WithContext(ctx)
 }
 
-func (app *application) contextGetUser(r *http.Request) *data.User {
-	user, ok := r.Context().Value(userContextKey).(*data.User)
+func (m *UsersContext) ContextGetUser(r *http.Request) *User {
+	user, ok := r.Context().Value(userContextKey).(*User)
 	if !ok {
 		panic("missing user value in request context")
 	}

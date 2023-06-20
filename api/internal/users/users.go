@@ -3,7 +3,7 @@ package data
 import (
 	"database/sql"
 	"errors"
-	validator "github.com/interviews/internal/vaildator"
+	validator "fullstackguru/pkg/vaildator"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"

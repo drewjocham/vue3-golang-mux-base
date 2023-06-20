@@ -1,11 +1,12 @@
-package main
+package pkg
 
 import (
 	"errors"
 	"expvar"
 	"fmt"
-	"github.com/interviews/internal/data"
-	validator "github.com/interviews/internal/vaildator"
+	"fullstackguru/internal/config"
+	data "fullstackguru/internal/users"
+	validator "fullstackguru/pkg/vaildator"
 	"net/http"
 	"strconv"
 	"strings"
@@ -17,12 +18,28 @@ import (
 	"golang.org/x/time/rate"
 )
 
-func (app *application) recoverPanic(next http.Handler) http.Handler {
+var (
+	ErrPanic          = errors.New("recovering panic")
+	ErrLimitReached   = errors.New("rate limit exceeded")
+	ErrRecordNotFound = errors.New("record not found")
+	ErrEditConflict   = errors.New("edit conflict")
+)
+
+type MiddleWare struct {
+	cfg       config.Config
+	userCtx   data.UsersContext
+	users     data.UserModel
+	token     Token
+	tokenRepo TokenRepository
+	e         customErrors
+}
+
+func (app *MiddleWare) RecoverPanic(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if err := recover(); err != nil {
 				w.Header().Set("Connection", "close")
-				app.serverErrorResponse(w, r, fmt.Errorf("%s", err))
+				app.e.serverErrorResponse(w, r, fmt.Errorf("%s", err))
 			}
 		}()
 
@@ -30,7 +47,7 @@ func (app *application) recoverPanic(next http.Handler) http.Handler {
 	})
 }
 
-func (app *application) rateLimit(next http.Handler) http.Handler {
+func (app *MiddleWare) RateLimit(next http.Handler) http.Handler {
 	type client struct {
 		limiter  *rate.Limiter
 		lastSeen time.Time
@@ -58,14 +75,14 @@ func (app *application) rateLimit(next http.Handler) http.Handler {
 	}()
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if app.config.Limiter.Enabled {
+		if app.cfg.Limiter.Enabled {
 			ip := realip.FromRequest(r)
 
 			mu.Lock()
 
 			if _, found := clients[ip]; !found {
 				clients[ip] = &client{
-					limiter: rate.NewLimiter(rate.Limit(app.config.Limiter.Rps), app.config.Limiter.Burst),
+					limiter: rate.NewLimiter(rate.Limit(app.cfg.Limiter.Rps), app.cfg.Limiter.Burst),
 				}
 			}
 
@@ -73,7 +90,7 @@ func (app *application) rateLimit(next http.Handler) http.Handler {
 
 			if !clients[ip].limiter.Allow() {
 				mu.Unlock()
-				app.rateLimitExceededResponse(w, r)
+				app.e.rateLimitExceededResponse(w, r)
 				return
 			}
 
@@ -84,21 +101,21 @@ func (app *application) rateLimit(next http.Handler) http.Handler {
 	})
 }
 
-func (app *application) authenticate(next http.Handler) http.Handler {
+func (app *MiddleWare) Authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Vary", "Authorization")
 
 		authorizationHeader := r.Header.Get("Authorization")
 
 		if authorizationHeader == "" {
-			r = app.contextSetUser(r, data.AnonymousUser)
+			r = app.userCtx.ContextSetUser(r, data.AnonymousUser)
 			next.ServeHTTP(w, r)
 			return
 		}
 
 		headerParts := strings.Split(authorizationHeader, " ")
 		if len(headerParts) != 2 || headerParts[0] != "Bearer" {
-			app.invalidAuthenticationTokenResponse(w, r)
+			app.e.invalidAuthenticationTokenResponse(w, r)
 			return
 		}
 
@@ -106,34 +123,34 @@ func (app *application) authenticate(next http.Handler) http.Handler {
 
 		v := validator.New()
 
-		if data.ValidateTokenPlaintext(v, token); !v.Valid() {
-			app.invalidAuthenticationTokenResponse(w, r)
+		if app.tokenRepo.ValidateTokenPlaintext(v, token); !v.Valid() {
+			app.e.invalidAuthenticationTokenResponse(w, r)
 			return
 		}
 
-		user, err := app.models.Users.GetForToken(data.ScopeAuthentication, token)
+		user, err := app.users.GetForToken(ScopeAuthentication, token)
 		if err != nil {
 			switch {
-			case errors.Is(err, data.ErrRecordNotFound):
-				app.invalidAuthenticationTokenResponse(w, r)
+			case errors.Is(err, ErrRecordNotFound):
+				app.e.invalidAuthenticationTokenResponse(w, r)
 			default:
-				app.serverErrorResponse(w, r, err)
+				app.e.serverErrorResponse(w, r, err)
 			}
 			return
 		}
 
-		r = app.contextSetUser(r, user)
+		r = app.userCtx.ContextSetUser(r, user)
 
 		next.ServeHTTP(w, r)
 	})
 }
 
-func (app *application) requireAuthenticatedUser(next http.HandlerFunc) http.HandlerFunc {
+func (app *MiddleWare) requireAuthenticatedUser(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user := app.contextGetUser(r)
+		user := app.userCtx.ContextGetUser(r)
 
 		if user.IsAnonymous() {
-			app.authenticationRequiredResponse(w, r)
+			app.e.authenticationRequiredResponse(w, r)
 			return
 		}
 
@@ -141,12 +158,12 @@ func (app *application) requireAuthenticatedUser(next http.HandlerFunc) http.Han
 	})
 }
 
-func (app *application) requireActivatedUser(next http.HandlerFunc) http.HandlerFunc {
+func (app *MiddleWare) RequireActivatedUser(next http.HandlerFunc) http.HandlerFunc {
 	fn := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user := app.contextGetUser(r)
+		user := app.userCtx.ContextGetUser(r)
 
 		if !user.Activated {
-			app.inactiveAccountResponse(w, r)
+			app.e.inactiveAccountResponse(w, r)
 			return
 		}
 
@@ -157,7 +174,7 @@ func (app *application) requireActivatedUser(next http.HandlerFunc) http.Handler
 }
 
 /*
-func (app *application) requirePermission(code string, next http.HandlerFunc) http.HandlerFunc {
+func (app *MiddleWare) requirePermission(code string, next http.HandlerFunc) http.HandlerFunc {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		user := app.contextGetUser(r)
 
@@ -179,7 +196,7 @@ func (app *application) requirePermission(code string, next http.HandlerFunc) ht
 }
 */
 
-func (app *application) enableCORS(next http.Handler) http.Handler {
+func (app *MiddleWare) EnableCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Vary", "Origin")
 
@@ -188,8 +205,8 @@ func (app *application) enableCORS(next http.Handler) http.Handler {
 		origin := r.Header.Get("Origin")
 
 		if origin != "" {
-			for i := range app.config.Cors.TrustedOrigins {
-				if origin == app.config.Cors.TrustedOrigins[i] {
+			for i := range app.cfg.Cors.TrustedOrigins {
+				if origin == app.cfg.Cors.TrustedOrigins[i] {
 					w.Header().Set("Access-Control-Allow-Origin", origin)
 
 					if r.Method == http.MethodOptions && r.Header.Get("Access-Control-Request-Method") != "" {
@@ -210,7 +227,7 @@ func (app *application) enableCORS(next http.Handler) http.Handler {
 	})
 }
 
-func (app *application) metrics(next http.Handler) http.Handler {
+func (app *MiddleWare) Metrics(next http.Handler) http.Handler {
 	totalRequestsReceived := expvar.NewInt("total_requests_received")
 	totalResponsesSent := expvar.NewInt("total_responses_sent")
 	totalProcessingTimeMicroseconds := expvar.NewInt("total_processing_time_μs")

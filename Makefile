@@ -1,5 +1,4 @@
 PROJ_PATH=${CURDIR}
-PROTO_DEST=./src/proto
 .DEFAULT_GOAL := help
 
 .PHONY: install-view
